@@ -6,6 +6,7 @@ ctx.canvas.width = 1000;
 ctx.canvas.height = 250;
 
 var barData = getRandomData(initialDateStr, barCount);
+console.log(barData)
 function lineData() { return barData.map(d => { return { x: d.x, y: d.c } }) };
 
 var chart = new Chart(ctx, {
@@ -117,10 +118,5 @@ var update = function () {
 };
 
 document.getElementById('update').addEventListener('click', update);
-
-document.getElementById('randomizeData').addEventListener('click', function () {
-    barData = getRandomData(initialDateStr, barCount);
-    update();
-});
 
 console.log(location)
