@@ -1,121 +1,92 @@
-var barCount = 60;
-var initialDateStr = '01 Apr 2017 00:00 Z';
+const barCount = 60;
+const initialDateStr = '01 Apr 2017 00:00 Z';
 
-var ctx = document.getElementById('chart').getContext('2d');
+const ctx = document.getElementById('chart').getContext('2d');
 ctx.canvas.width = 1000;
 ctx.canvas.height = 250;
 
-var barData = await getData(initialDateStr, barCount);
-console.log(barData)
-function lineData() { return barData.map(d => { return { x: d.x, y: d.c } }) };
-
-var chart = new Chart(ctx, {
-    type: 'candlestick',
-    data: {
-        datasets: [{
-            label: 'CHRT - Chart.js Corporation',
-            data: barData
-        }]
-    }
-});
-
-async function getData() {
-    const ticker = 'AAPL'
-    const interval = '1m'
-    const start = '2023-08-11'
-    const end = '2023-08-12'
-
-    const response = await fetch('/getData', {
-    // const response = await fetch('http://127.0.0.1:5000/getData', {
-        method: 'POST',
-        // mode: 'no-cors',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        // body: JSON.stringify({ ticker, start, end, interval })
-        body: JSON.stringify({ ticker: ticker, start: start, end: end, interval: interval })
-    });
-
-    const tickerData = await response.json();
-    console.log('tickerData', tickerData)
-    // console.log('content', data)
-    const chartData = []
-    for (const [date, data] of Object.entries(tickerData)) {
-        chartData.push({
-            x: date,
-            o: data['open'],
-            h: data['high'],
-            l: data['low'],
-            c: data['close']
+class StockChart {
+    constructor() {
+        // this.barData = await this.getData(initialDateStr, barCount)
+        this.chart = new Chart(ctx, {
+            type: 'candlestick',
+            data: {
+                datasets: [{
+                    label: 'CHRT - Chart.js Corporation',
+                    data: this.barData
+                }]
+            }
         })
+        this.getData(initialDateStr, barCount).then(data => this.barData = data).then(() => this.update())
+        // this.getData(initialDateStr, barCount).then(data => console.log(data))
+
     }
-    return chartData;
-}
 
-var update = function () {
-    var dataset = chart.config.data.datasets[0];
+    lineData = () => { return this.barData.map(d => { return { x: d.x, y: d.c } }) }
 
-    // candlestick vs ohlc
-    var type = document.getElementById('type').value;
-    dataset.type = type;
+    getData = async () => {
+        const ticker = 'AAPL'
+        const interval = '1m'
+        const start = '2023-08-11'
+        const end = '2023-08-12'
 
-    // linear vs log
-    var scaleType = document.getElementById('scale-type').value;
-    chart.config.options.scales.y.type = scaleType;
+        const response = await fetch('/getData', {
+            // const response = await fetch('http://127.0.0.1:5000/getData', {
+            method: 'POST',
+            // mode: 'no-cors',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            // body: JSON.stringify({ ticker, start, end, interval })
+            body: JSON.stringify({ ticker: ticker, start: start, end: end, interval: interval })
+        });
 
-    // color
-    var colorScheme = document.getElementById('color-scheme').value;
-    if (colorScheme === 'neon') {
+        const tickerData = await response.json();
+        // console.log('tickerData', tickerData)
+        // console.log('content', data)
+        const chartData = []
+        for (const [date, data] of Object.entries(tickerData)) {
+            chartData.push({
+                x: date,
+                o: data['Open'],
+                h: data['High'],
+                l: data['Low'],
+                c: data['Close']
+            })
+        }
+        return chartData;
+    }
+
+    update = () => {
+        var dataset = this.chart.config.data.datasets[0];
+        this.chart.config.options.scales.y.type = 'linear';
+
         dataset.color = {
             up: '#01ff01',
             down: '#fe0000',
             unchanged: '#999',
         };
-    } else {
-        delete dataset.color;
-    }
 
-    // border
-    var border = document.getElementById('border').value;
-    var defaultOpts = Chart.defaults.elements[type];
-    if (border === 'true') {
+        // border
+        var defaultOpts = Chart.defaults.elements['candlestick'];
         dataset.borderColor = defaultOpts.borderColor;
-    } else {
-        dataset.borderColor = {
-            up: defaultOpts.color.up,
-            down: defaultOpts.color.down,
-            unchanged: defaultOpts.color.up
-        };
-    }
 
-    // mixed charts
-    var mixed = document.getElementById('mixed').value;
-    if (mixed === 'true') {
-        chart.config.data.datasets = [
+        // mixed charts
+        this.chart.config.data.datasets = [
             {
                 label: 'CHRT - Chart.js Corporation',
-                data: barData
+                data: this.barData
             },
-            {
-                label: 'Close price',
-                type: 'line',
-                data: lineData()
-            }
+            // {
+            //     label: 'Close price',
+            //     type: 'line',
+            //     data: this.lineData()
+            // }
         ]
+        console.log(this.chart.config.data.datasets)
+        this.chart.update();
     }
-    else {
-        chart.config.data.datasets = [
-            {
-                label: 'CHRT - Chart.js Corporation',
-                data: barData
-            }
-        ]
-    }
-
-    chart.update();
 };
 
-document.getElementById('update').addEventListener('click', update);
-
-console.log(location)
+const stockChart = new StockChart();
