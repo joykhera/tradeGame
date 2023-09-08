@@ -25,19 +25,20 @@ async function getData() {
     const start = '2023-08-11'
     const end = '2023-08-12'
 
-    const response = await fetch('/api/getData', {
+    const response = await fetch('/getData', {
     // const response = await fetch('http://127.0.0.1:5000/getData', {
         method: 'POST',
-        mode: 'no-cors',
-        // headers: {
-        //     'Accept': 'application/json',
-        //     'Content-Type': 'application/json'
-        // },
+        // mode: 'no-cors',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
         // body: JSON.stringify({ ticker, start, end, interval })
         body: JSON.stringify({ ticker: ticker, start: start, end: end, interval: interval })
     });
 
     const tickerData = await response.json();
+    console.log('tickerData', tickerData)
     // console.log('content', data)
     const chartData = []
     for (const [date, data] of Object.entries(tickerData)) {

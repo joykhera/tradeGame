@@ -1,11 +1,16 @@
 import yfinance as yf
-from flask import Flask, request
+from flask import Flask, render_template, request
 from flask_cors import CORS, cross_origin
 import json
 
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
+
+@app.route('/')
+def home():
+    print("render_template('index.html')")
+    return render_template('index.html')
 
 @app.route('/getData', methods=['POST'])
 @cross_origin()
