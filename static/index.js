@@ -1,6 +1,3 @@
-const barCount = 60;
-const initialDateStr = '01 Apr 2017 00:00 Z';
-
 const ctx = document.getElementById('chart').getContext('2d');
 ctx.canvas.width = 1000;
 ctx.canvas.height = 250;
@@ -15,9 +12,9 @@ class StockChart {
                     label: 'CHRT - Chart.js Corporation',
                     data: this.barData
                 }]
-            }
+            },
         })
-        this.getData(initialDateStr, barCount).then(data => this.barData = data).then(() => this.update())
+        this.getData().then(data => this.barData = data).then(() => this.update())
         // this.getData(initialDateStr, barCount).then(data => console.log(data))
 
     }
@@ -85,6 +82,39 @@ class StockChart {
             // }
         ]
         console.log(this.chart.config.data.datasets)
+ 
+        const delayBetweenPoints = 10000 / this.barData.length;
+        const previousY = (ctx) => ctx.index === 0 ? ctx.chart.scales.y.getPixelForValue(100) : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(['y'], true).y;
+        const animationOptions = {
+            x: {
+                type: 'number',
+                easing: 'linear',
+                duration: delayBetweenPoints,
+                from: NaN,
+                delay(ctx) {
+                    if (ctx.type !== 'data' || ctx.xStarted) {
+                        return 0;
+                    }
+                    ctx.xStarted = true;
+                    console.log(ctx.index, ctx.index * delayBetweenPoints)
+                    return ctx.index * delayBetweenPoints;
+                }
+            },
+            y: {
+                type: 'number',
+                easing: 'linear',
+                duration: delayBetweenPoints,
+                from: previousY,
+                delay(ctx) {
+                    if (ctx.type !== 'data' || ctx.yStarted) {
+                        return 0;
+                    }
+                    ctx.yStarted = true;
+                    return ctx.index * delayBetweenPoints;
+                }
+            }
+        }
+        this.chart.config.options.animation = animationOptions
         this.chart.update();
     }
 };
