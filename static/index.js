@@ -2,7 +2,12 @@ const ctx = document.getElementById('chart').getContext('2d');
 ctx.canvas.width = 1000;
 ctx.canvas.height = 250;
 
-const curDataLen = 50;
+let numDatapoints = 50;
+document.getElementById('numDatapoints').addEventListener('input', (e) => numDatapoints = e.target.value)
+ 
+let interval = 500;
+document.getElementById('interval').addEventListener('input', (e) => interval = e.target.value)
+
 const tickerOptions = ['TSLA', 'AAPL', 'F', 'NVDA', 'AMD']
 const today = new Date()
 const latestDate = new Date()
@@ -84,7 +89,7 @@ class StockChart {
         // border
         const defaultOpts = Chart.defaults.elements['candlestick'];
         dataset.borderColor = defaultOpts.borderColor;
-        const data = this.barData.filter((d, i) => i >= index - curDataLen && i < index);
+        const data = this.barData.filter((d, i) => i >= index - numDatapoints && i < index);
         // console.log(index, this.barData, data)
 
         // mixed charts
@@ -100,7 +105,7 @@ class StockChart {
 
         if (index <= this.barData.length) {
             console.log(index)
-            setTimeout(() => this.update(index + 1), 500);
+            setTimeout(() => this.update(index + 1), interval);
         }
     }
 };
