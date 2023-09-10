@@ -9,7 +9,6 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route('/')
 def home():
-    print("render_template('index.html')")
     return render_template('index.html')
 
 @app.route('/getData', methods=['POST'])

@@ -13,8 +13,10 @@ const today = new Date()
 const latestDate = new Date()
 latestDate.setDate(today.getDate() - 1)
 const earliestDate = new Date()
-earliestDate.setDate(today.getDate() - 30)
+earliestDate.setDate(today.getDate() - 29)
 const timeDiff = latestDate.getTime() - earliestDate.getTime();
+let cash = 1000;
+let shares = 0;
 
 class StockChart {
     constructor(){
@@ -104,10 +106,32 @@ class StockChart {
         this.chart.update();
 
         if (index <= this.barData.length) {
-            console.log(index)
+            // console.log(index)
             setTimeout(() => this.update(index + 1), interval);
         }
     }
 };
 
 const stockChart = new StockChart();
+const cashElement = document.getElementById('cash')
+const sharesElement = document.getElementById('shares')
+
+document.getElementById('buy').addEventListener('click', () => {
+    const latestPrice = stockChart.chart.config.data.datasets[0].data[stockChart.chart.config.data.datasets[0].data.length - 1].c
+    if (cash >= latestPrice) {
+        shares += 1
+        cash -= latestPrice
+        sharesElement.innerHTML = `Shares: ${shares}`
+        cashElement.innerHTML = `Cash: $${cash}`
+    }
+})
+
+document.getElementById('sell').addEventListener('click', () => {
+    const latestPrice = stockChart.chart.config.data.datasets[0].data[stockChart.chart.config.data.datasets[0].data.length - 1].c
+    if (shares > 0) {
+        shares -= 1
+        cash += latestPrice
+        sharesElement.innerHTML = `Shares: ${shares}`
+        cashElement.innerHTML = `Cash: $${cash}`
+    }
+})
