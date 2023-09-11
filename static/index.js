@@ -17,6 +17,7 @@ earliestDate.setDate(today.getDate() - 29)
 const timeDiff = latestDate.getTime() - earliestDate.getTime();
 let cash = 1000;
 let shares = 0;
+const orderHistory = []
 
 class StockChart {
     constructor(){
@@ -106,8 +107,13 @@ class StockChart {
         this.chart.update();
 
         if (index <= this.barData.length) {
-            // console.log(index)
             setTimeout(() => this.update(index + 1), interval);
+        } else {
+            const latestPrice = stockChart.chart.config.data.datasets[0].data[stockChart.chart.config.data.datasets[0].data.length - 1].c
+            cash += latestPrice * shares
+            shares = 0
+            sharesElement.innerHTML = `Shares: ${shares}`
+            cashElement.innerHTML = `Cash: $${cash}`
         }
     }
 };
@@ -115,23 +121,29 @@ class StockChart {
 const stockChart = new StockChart();
 const cashElement = document.getElementById('cash')
 const sharesElement = document.getElementById('shares')
+const orderHistoryElement = document.getElementById('orderHistory')
 
 document.getElementById('buy').addEventListener('click', () => {
-    const latestPrice = stockChart.chart.config.data.datasets[0].data[stockChart.chart.config.data.datasets[0].data.length - 1].c
-    if (cash >= latestPrice) {
+    const curTickerDate = stockChart.chart.config.data.datasets[0].data[stockChart.chart.config.data.datasets[0].data.length - 1]
+    console.log(curTickerDate)
+    if (cash >= curTickerDate.c) {
         shares += 1
-        cash -= latestPrice
+        cash -= curTickerDate.c
+        orderHistory.push({ ticker: stockChart.ticker, time: new Date(parseInt(curTickerDate.x)).toISOString().split("T")[1].split('.')[0], price: curTickerDate.c, type: 'buy' })
         sharesElement.innerHTML = `Shares: ${shares}`
         cashElement.innerHTML = `Cash: $${cash}`
+        orderHistoryElement.innerHTML = orderHistory.map(o => `<li>${o.type} ${o.ticker} @ ${o.price} on ${o.time}</li>`).join('')
     }
 })
 
 document.getElementById('sell').addEventListener('click', () => {
-    const latestPrice = stockChart.chart.config.data.datasets[0].data[stockChart.chart.config.data.datasets[0].data.length - 1].c
+    const curTickerDate = stockChart.chart.config.data.datasets[0].data[stockChart.chart.config.data.datasets[0].data.length - 1]
     if (shares > 0) {
         shares -= 1
-        cash += latestPrice
+        cash += curTickerDate.c
+        orderHistory.push({ ticker: stockChart.ticker, time: new Date(parseInt(curTickerDate.x)).toISOString().split("T")[1].split('.')[0], price: curTickerDate.c, type: 'sell' })
         sharesElement.innerHTML = `Shares: ${shares}`
         cashElement.innerHTML = `Cash: $${cash}`
+        orderHistoryElement.innerHTML = orderHistory.map(o => `<li>${o.type} ${o.ticker} @ ${o.price} on ${o.time}</li>`).join('')
     }
 })
